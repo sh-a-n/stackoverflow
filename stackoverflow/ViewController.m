@@ -35,8 +35,8 @@
     
     self.dataSource = [NSArray arrayWithObjects:@"Objective-c",@"ios",@"xcode",@"cocoa-touch",@"iphone", nil];
     self.navigationItem.title = dataSource[0];
-    
-    [APIDownload downloadWithURL:[NSString stringWithFormat:@"http://api.stackexchange.com/2.1/questions?order=desc&max=50&sort=votes&site=stackoverflow&filter=!-.mgWKou0vDR&tagged=%@",@"Objective-c"] delegate:self];
+    //page=1&pagesize=50&todate=1362614400&order=desc&sort=creation&tagged=objective-c&site=stackoverflow
+    [APIDownload downloadWithURL:[NSString stringWithFormat:@"http://api.stackexchange.com/2.1/questions?order=desc&page=1&pagesize=50&sort=creation&site=stackoverflow&filter=!-.mgWKou0vDR&tagged=%@&todate=%ld",@"Objective-c",(long)[[NSDate date] timeIntervalSince1970]] delegate:self];
 }
 
 - (void)didReceiveMemoryWarning
@@ -129,7 +129,7 @@
         if (self.navigationItem.title != [dataSource objectAtIndex:[self.tagPicker selectedRowInComponent:0]])
         {
             self.navigationItem.title = [dataSource objectAtIndex:[self.tagPicker selectedRowInComponent:0]];
-            [APIDownload downloadWithURL:[NSString stringWithFormat:@"http://api.stackexchange.com/2.1/questions?order=desc&max=50&sort=votes&site=stackoverflow&filter=!-.mgWKou0vDR&tagged=%@",[dataSource objectAtIndex:[self.tagPicker selectedRowInComponent:0]]] delegate:self];
+            [APIDownload downloadWithURL:[NSString stringWithFormat:@"http://api.stackexchange.com/2.1/questions?order=desc&page=1&pagesize=50&sort=creation&site=stackoverflow&filter=!-.mgWKou0vDR&tagged=%@&todate=%ld",[dataSource objectAtIndex:[self.tagPicker selectedRowInComponent:0]],(long)[[NSDate date] timeIntervalSince1970]] delegate:self];
             self.activityIndicator.hidden = false;
         }
         else
