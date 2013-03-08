@@ -22,6 +22,10 @@
 @synthesize mainTableView;
 @synthesize questData;
 @synthesize questDataArray;
+@synthesize errorLabel;
+@synthesize tryButton;
+@synthesize timer;
+@synthesize tagButton;
 
 - (void)viewDidLoad
 {
@@ -30,13 +34,14 @@
     
     self.tagPicker.hidden = true;
     
-    UIBarButtonItem *tagButton = [[UIBarButtonItem alloc]initWithTitle:@"Tag" style:UIBarButtonItemStyleBordered target:self action:@selector(tagSelector:)];
+    tagButton = [[UIBarButtonItem alloc]initWithTitle:@"Tag" style:UIBarButtonItemStyleBordered target:self action:@selector(tagSelector:)];
     self.navigationItem.leftBarButtonItem = tagButton;
     
     self.dataSource = [NSArray arrayWithObjects:@"Objective-c",@"ios",@"xcode",@"cocoa-touch",@"iphone", nil];
     self.navigationItem.title = dataSource[0];
-    //page=1&pagesize=50&todate=1362614400&order=desc&sort=creation&tagged=objective-c&site=stackoverflow
+    
     [APIDownload downloadWithURL:[NSString stringWithFormat:@"http://api.stackexchange.com/2.1/questions?order=desc&page=1&pagesize=50&sort=creation&site=stackoverflow&filter=!-.mgWKou0vDR&tagged=%@&todate=%ld",@"Objective-c",(long)[[NSDate date] timeIntervalSince1970]] delegate:self];
+    [self performSelector:@selector(tick) withObject:nil afterDelay:10.5f];
 }
 
 - (void)didReceiveMemoryWarning
@@ -63,7 +68,7 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    static NSString *CellIdentifier = @"Cell";
+    NSString *CellIdentifier = [NSString stringWithFormat:@"Cell%d",indexPath.row];
     
     MainCell *cell = (MainCell*)[tableView dequeueReusableCellWithIdentifier:CellIdentifier];
     if (cell == nil) {
@@ -74,13 +79,47 @@
     
     cell.ansCount.text = [NSString stringWithFormat:@"%@",[(NSDictionary*)[questDataArray objectForKey:@"items"][indexPath.row] objectForKey:@"answer_count"]];
     cell.autor.text = [(NSDictionary*)[(NSDictionary*)[questDataArray objectForKey:@"items"][indexPath.row] objectForKey:@"owner"] objectForKey:@"display_name"];
-    NSDate * date = [NSDate dateWithTimeIntervalSince1970:[(NSString*)[(NSDictionary*)[questDataArray objectForKey:@"items"][indexPath.row] objectForKey:@"last_edit_date"] integerValue]];
-    NSDateFormatter * format = [[NSDateFormatter alloc]init];
-    [format setDateStyle:NSDateFormatterShortStyle];
-    //NSLog(@"%@",[format stringFromDate:date]);
-    cell.modDate.text = [format stringFromDate:date];
+    NSInteger lastmod_date = [[(NSDictionary*)[questDataArray objectForKey:@"items"][indexPath.row] objectForKey:@"last_edit_date"] integerValue];
+    if (lastmod_date == 0)
+    {
+        lastmod_date = [[(NSDictionary*)[questDataArray objectForKey:@"items"][indexPath.row] objectForKey:@"creation_date"] integerValue];
+    }
+    NSInteger seconds = [[NSDate date] timeIntervalSince1970] - lastmod_date;
+    
+    if (seconds<60)
+    {
+        cell.modDate.text = [NSString stringWithFormat:@"Modified %ld sec. ago",(long)seconds];
+    }
+    else
+    {
+        if (seconds<3600)
+        {
+            cell.modDate.text = [NSString stringWithFormat:@"Modified %ld min. ago",(long)seconds/60];
+        }
+        else
+            if (seconds<3600*24) {
+                cell.modDate.text = [NSString stringWithFormat:@"Midified %ld hours ago",(long)seconds/3600];
+            }
+        else if (seconds<3600*24*30)
+        {
+            cell.modDate.text = [NSString stringWithFormat:@"Modified %ld days ago",(long)seconds/3600/24];
+        }
+        else if (seconds<3600*24*365)
+        {
+            cell.modDate.text = [NSString stringWithFormat:@"Modified %ld mes. ago",(long)seconds/3600/24/30];
+        }
+        else if (seconds>=3600*24*365)
+        {
+            cell.modDate.text = [NSString stringWithFormat:@"Modified %ld years ago",(long)seconds/3600/24/365];
+        }
+    }
     
     cell.labeltext.text = [(NSDictionary*)[questDataArray objectForKey:@"items"][indexPath.row] objectForKey:@"title"];
+    UIFont *cellFont = [UIFont fontWithName:@"Helvetica" size:17.0f];
+    
+    CGSize labelSize = [cell.labeltext.text sizeWithFont:cellFont constrainedToSize:CGSizeMake(283.0f, 42.0f) lineBreakMode:NSLineBreakByTruncatingTail];
+    
+    cell.labeltext.frame = CGRectMake(20.0f, 36.0f, 283.0f, labelSize.height);
     
     
     return cell;
@@ -88,38 +127,31 @@
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    detailViewController = [[DetailViewController alloc]
-                                  initWithNibName:@"DetailViewController" bundle:nil];
-    static NSString *CellIdentifier = @"Cell";
-    
-    MainCell *cell = (MainCell*)[tableView dequeueReusableCellWithIdentifier:CellIdentifier];
-    if (cell == nil) {
-        NSArray *nib = [[NSBundle mainBundle] loadNibNamed:@"MainCell"owner:self options:nil];
-        cell = [nib objectAtIndex:0];
-    }
-
-    cell.autor.text = [[(MainCell*)[tableView cellForRowAtIndexPath:indexPath] autor] text];
-    cell.ansCount.text = [NSString stringWithFormat:@"%@",[(NSDictionary*)[questDataArray objectForKey:@"items"][indexPath.row] objectForKey:@"score"]];
-    cell.modDate.text = [[(MainCell*)[tableView cellForRowAtIndexPath:indexPath] modDate] text];
-    cell.labeltext.text = [[(MainCell*)[tableView cellForRowAtIndexPath:indexPath] labeltext] text];
-    detailViewController.questionCell = cell;
+    detailViewController = [[DetailViewController alloc] initWithNibName:@"DetailViewController" bundle:nil];
+   
+    detailViewController.questionCell = (MainCell*)[tableView cellForRowAtIndexPath:indexPath];
     detailViewController.answers = [(NSDictionary*)[questDataArray objectForKey:@"items"][indexPath.row] objectForKey:@"answers"];
     [self.navigationController pushViewController:detailViewController animated:YES];
     
-
 }
 
 
 
 
 - (IBAction)tagSelector:(id)sender {
-    
+    [self performSelector:@selector(tselector)];
+        
+}
+
+-(void)tselector
+{
     if (self.navigationItem.leftBarButtonItem.style == UIBarButtonItemStyleBordered)
     {
         self.navigationItem.leftBarButtonItem.style = UIBarButtonItemStyleDone;
         [self.mainTableView setFrame:CGRectMake(mainTableView.frame.origin.x, mainTableView.frame.origin.y, mainTableView.frame.size.width, mainTableView.frame.size.height - self.tagPicker.frame.size.height)];
         self.tagPicker.hidden = false;
         self.pickerBackView.hidden = false;
+        
     }
     else
     {
@@ -131,13 +163,17 @@
             self.navigationItem.title = [dataSource objectAtIndex:[self.tagPicker selectedRowInComponent:0]];
             [APIDownload downloadWithURL:[NSString stringWithFormat:@"http://api.stackexchange.com/2.1/questions?order=desc&page=1&pagesize=50&sort=creation&site=stackoverflow&filter=!-.mgWKou0vDR&tagged=%@&todate=%ld",[dataSource objectAtIndex:[self.tagPicker selectedRowInComponent:0]],(long)[[NSDate date] timeIntervalSince1970]] delegate:self];
             self.activityIndicator.hidden = false;
+            self.errorLabel.hidden = true;
+            self.tryButton.hidden = true;
+            [self performSelector:@selector(tick) withObject:nil afterDelay:10.5f];
         }
         else
         {
-            self.pickerBackView.hidden = true;
+            if ([(NSDictionary*)[questDataArray objectForKey:@"items"] count]>0)
+                self.pickerBackView.hidden = true;
         }
     }
-    
+
 }
 
 - (NSInteger)numberOfComponentsInPickerView:(UIPickerView *)pickerView
@@ -145,16 +181,13 @@
     return 1;
 }
 
-- (NSInteger)pickerView:(UIPickerView *)pickerView
-numberOfRowsInComponent:(NSInteger)component
+- (NSInteger)pickerView:(UIPickerView *)pickerView numberOfRowsInComponent:(NSInteger)component
 {
     return dataSource.count;
 }
 
 
-- (NSString *)pickerView:(UIPickerView *)pickerView
-             titleForRow:(NSInteger)row
-            forComponent:(NSInteger)component
+- (NSString *)pickerView:(UIPickerView *)pickerView titleForRow:(NSInteger)row forComponent:(NSInteger)component
 {
     return dataSource[row];
 }
@@ -179,7 +212,28 @@ numberOfRowsInComponent:(NSInteger)component
     
 }
 
+- (void)tick
+{
+    if (!self.activityIndicator.hidden) {
+        self.activityIndicator.hidden = true;
+        self.errorLabel.hidden = false;
+        self.tryButton.hidden = false;
+    }
+    
+}
 
 
 
+- (void)viewDidUnload {
+    [self setErrorLabel:nil];
+    [self setTryButton:nil];
+    [super viewDidUnload];
+}
+- (IBAction)tryButtonTouch:(id)sender {
+    self.tryButton.hidden = true;
+    self.errorLabel.hidden = true;
+    [APIDownload downloadWithURL:[NSString stringWithFormat:@"http://api.stackexchange.com/2.1/questions?order=desc&page=1&pagesize=50&sort=creation&site=stackoverflow&filter=!-.mgWKou0vDR&tagged=%@&todate=%ld",self.navigationItem.title,(long)[[NSDate date] timeIntervalSince1970]] delegate:self];
+    self.activityIndicator.hidden = false;
+    [self performSelector:@selector(tick) withObject:nil afterDelay:10.5f];
+}
 @end

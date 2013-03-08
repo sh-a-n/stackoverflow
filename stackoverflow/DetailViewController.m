@@ -28,7 +28,6 @@
     if (self) {
         // Custom initialization
     }
-    
     return self;
 }
 
@@ -36,8 +35,10 @@
 {
     [super viewDidLoad];
     // Do any additional setup after loading the view from its nib.
-    self.navigationController.navigationBar.hidden = false;
+    //self.navigationController.navigationBar.hidden = false;
     
+    UIBarButtonItem * bitem = [[UIBarButtonItem alloc]initWithTitle:@"Back" style:UIBarButtonItemStyleBordered target:self action:@selector(tselect)];
+    self.navigationItem.leftBarButtonItem = bitem;
 }
 
 - (void)didReceiveMemoryWarning
@@ -69,22 +70,29 @@
             NSArray *nib = [[NSBundle mainBundle] loadNibNamed:@"MainCell"owner:self options:nil];
             cell = [nib objectAtIndex:0];
         }
-        cell.labeltext.lineBreakMode = NSLineBreakByWordWrapping;
-        cell.labeltext.numberOfLines = 0;
+        
         
         cell.autor.text = questionCell.autor.text;
         cell.ansCount.text = questionCell.ansCount.text;
         cell.modDate.text = questionCell.modDate.text;
         cell.labeltext.text = questionCell.labeltext.text;
+        //NSString * t = questionCell.labeltext.text;
+        
         
         cell.contentView.backgroundColor = [UIColor colorWithRed:204.0f/255.0f green:1.0f blue:1.0f alpha:1.0f];
+        
+        
         NSString *cellText;
         
-            cellText = questionCell.labeltext.text;
+            cellText = cell.labeltext.text;
         UIFont *cellFont = [UIFont fontWithName:@"Helvetica" size:17.0f];
         
-        CGSize labelSize = [cellText sizeWithFont:cellFont forWidth:260.0f lineBreakMode:NSLineBreakByWordWrapping];
-        cell.labeltext.frame = CGRectMake(cell.labeltext.frame.origin.x, cell.labeltext.frame.origin.y, cell.labeltext.frame.size.width, labelSize.height);
+        CGSize labelSize = [cellText sizeWithFont:cellFont constrainedToSize:CGSizeMake(283.0f, MAXFLOAT) lineBreakMode:NSLineBreakByWordWrapping];
+        
+        cell.labeltext.frame = CGRectMake(20.0f, 36.0f, 283.0f, labelSize.height);
+        
+        cell.labeltext.numberOfLines = 0;
+        cell.labeltext.lineBreakMode = NSLineBreakByWordWrapping;
         
         return cell;
     }
@@ -98,11 +106,44 @@
         cell.labeltext.lineBreakMode = NSLineBreakByWordWrapping;
         cell.labeltext.numberOfLines = 0;
         cell.autor.text = [[answers[indexPath.row-1] objectForKey:@"owner"]objectForKey:@"display_name"];
-        NSDate * date = [NSDate dateWithTimeIntervalSince1970:[[answers[indexPath.row-1] objectForKey:@"last_edit_date"] integerValue]];
-        NSDateFormatter * format = [[NSDateFormatter alloc]init];
-        [format setDateStyle:NSDateFormatterShortStyle];
-        //NSLog(@"%@",[format stringFromDate:date]);
-        cell.modDate.text = [format stringFromDate:date];
+        
+        NSInteger lastmod_date = [[answers[indexPath.row-1] objectForKey:@"last_edit_date"] integerValue];
+        if (lastmod_date == 0)
+        {
+            lastmod_date = [[answers[indexPath.row-1] objectForKey:@"creation_date"] integerValue];
+        }
+        NSInteger seconds = [[NSDate date] timeIntervalSince1970] - lastmod_date;
+        
+        if (seconds<60)
+        {
+            cell.modDate.text = [NSString stringWithFormat:@"Modified %ld sec. ago",(long)seconds];
+        }
+        else
+        {
+            if (seconds<3600)
+            {
+                cell.modDate.text = [NSString stringWithFormat:@"Modified %ld min. ago",(long)seconds/60];
+            }
+            else
+                if (seconds<3600*24) {
+                    cell.modDate.text = [NSString stringWithFormat:@"Midified %ld hours ago",(long)seconds/3600];
+                }
+                else if (seconds<3600*24*30)
+                {
+                    cell.modDate.text = [NSString stringWithFormat:@"Modified %ld days ago",(long)seconds/3600/24];
+                }
+                else if (seconds<3600*24*365)
+                {
+                    cell.modDate.text = [NSString stringWithFormat:@"Modified %ld mes. ago",(long)seconds/3600/24/30];
+                }
+                else if (seconds>=3600*24*365)
+                {
+                    cell.modDate.text = [NSString stringWithFormat:@"Modified %ld years ago",(long)seconds/3600/24/365];
+                }
+        }
+
+        
+        
         cell.ansCount.text = [NSString stringWithFormat:@"%@",[answers[indexPath.row-1] objectForKey:@"score"]];
         cell.labeltext.text = [self deleteTegs:[answers[indexPath.row-1] objectForKey:@"body"]];
         if ([[answers[indexPath.row-1] objectForKey:@"is_accepted"] integerValue] ==1)
@@ -144,7 +185,7 @@
         NSString *cellText = questionCell.labeltext.text;
         UIFont *cellFont = [UIFont fontWithName:@"Helvetica" size:17.0f];
         
-        CGSize labelSize = [cellText sizeWithFont:cellFont constrainedToSize:CGSizeMake(260.0f, MAXFLOAT) lineBreakMode:NSLineBreakByWordWrapping];
+        CGSize labelSize = [cellText sizeWithFont:cellFont constrainedToSize:CGSizeMake(283.0f, MAXFLOAT) lineBreakMode:NSLineBreakByWordWrapping];
         
         return labelSize.height + 80.0f;
     }
@@ -168,6 +209,14 @@
     return oldstring;
 }
 
+- (void)tselect
+{
+    NSArray *contrs = self.navigationController.viewControllers;
+    [[contrs objectAtIndex:0]performSelector:@selector(tselector)];
+    [self.navigationController popViewControllerAnimated:YES];
+    [[contrs objectAtIndex:0]performSelector:@selector(tselector) withObject:nil afterDelay:0.1f];
+    
+}
 
 
 

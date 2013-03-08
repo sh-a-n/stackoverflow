@@ -24,4 +24,5 @@
 - (void)setSuccessSelector:(SEL)selector;
 - (void)cancel;
 
+
 @end

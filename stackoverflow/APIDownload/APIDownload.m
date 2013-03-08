@@ -40,14 +40,14 @@
     NSURL *dounloadURL = [NSURL URLWithString:url];
     NSURLRequest *theRequest=[NSURLRequest requestWithURL:dounloadURL
                                               cachePolicy:NSURLRequestUseProtocolCachePolicy
-                                          timeoutInterval:60.0f];
+                                          timeoutInterval:10.0f];
     
     request.connection = [[[NSURLConnection alloc] initWithRequest:theRequest delegate:request] autorelease];
     if (request.connection) {
-        //[[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
+        [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
         request.downloadData = [NSMutableData data];
     } else {
-        //[[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
+        [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
         NSLog(@"Connection failed");
     }
     
@@ -83,7 +83,7 @@
 }
 
 - (void)connectionDidFinishLoading:(NSURLConnection *)connection {
-    //[[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
+    [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
     if ([delegate retainCount] == 1) {
         [self cancel];
     } else {
@@ -100,8 +100,9 @@
 
 - (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error 
 {
-    //[[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
+    [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
     NSLog(@"%@", error);
+    
 }
 
 - (void)setSuccessSelector:(SEL)selector {
@@ -109,8 +110,10 @@
 }
 
 - (void)cancel {
-    //[[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
+    [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
     [connection cancel];
 }
+
+
 
 @end
