@@ -17,7 +17,7 @@
 @end
 
 @implementation ViewController
-@synthesize detailViewController;
+//@synthesize detailViewController;
 @synthesize dataSource;
 @synthesize mainTableView;
 @synthesize questData;
@@ -41,7 +41,7 @@
     self.navigationItem.title = dataSource[0];
     
     [APIDownload downloadWithURL:[NSString stringWithFormat:@"http://api.stackexchange.com/2.1/questions?order=desc&page=1&pagesize=50&sort=creation&site=stackoverflow&filter=!-.mgWKou0vDR&tagged=%@&todate=%ld",@"Objective-c",(long)[[NSDate date] timeIntervalSince1970]] delegate:self];
-    [self performSelector:@selector(tick) withObject:nil afterDelay:10.5f];
+    
 }
 
 - (void)didReceiveMemoryWarning
@@ -68,11 +68,12 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    NSString *CellIdentifier = [NSString stringWithFormat:@"Cell%d",indexPath.row];
+    static NSString *CellIdentifier = @"Cell";
+    
     
     MainCell *cell = (MainCell*)[tableView dequeueReusableCellWithIdentifier:CellIdentifier];
     if (cell == nil) {
-        NSArray *nib = [[NSBundle mainBundle] loadNibNamed:@"MainCell"owner:self options:nil];
+        NSArray *nib = [[NSBundle mainBundle] loadNibNamed:@"MainCell" owner:self options:nil];
         cell = [nib objectAtIndex:0];
     }
     
@@ -127,7 +128,7 @@
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    detailViewController = [[DetailViewController alloc] initWithNibName:@"DetailViewController" bundle:nil];
+    DetailViewController * detailViewController = [[DetailViewController alloc] initWithNibName:@"DetailViewController" bundle:nil];
    
     detailViewController.questionCell = (MainCell*)[tableView cellForRowAtIndexPath:indexPath];
     detailViewController.answers = [(NSDictionary*)[questDataArray objectForKey:@"items"][indexPath.row] objectForKey:@"answers"];
@@ -138,43 +139,38 @@
 
 
 
-- (IBAction)tagSelector:(id)sender {
-    [self performSelector:@selector(tselector)];
-        
-}
 
--(void)tselector
-{
+- (IBAction)tagSelector:(id)sender {
     if (self.navigationItem.leftBarButtonItem.style == UIBarButtonItemStyleBordered)
     {
         self.navigationItem.leftBarButtonItem.style = UIBarButtonItemStyleDone;
-        [self.mainTableView setFrame:CGRectMake(mainTableView.frame.origin.x, mainTableView.frame.origin.y, mainTableView.frame.size.width, mainTableView.frame.size.height - self.tagPicker.frame.size.height)];
-        self.tagPicker.hidden = false;
-        self.pickerBackView.hidden = false;
+        
+        self.tagPicker.hidden = NO;
+        self.pickerBackView.hidden = NO;
         
     }
     else
     {
         self.navigationItem.leftBarButtonItem.style = UIBarButtonItemStyleBordered;
-        [self.mainTableView setFrame:CGRectMake(mainTableView.frame.origin.x, mainTableView.frame.origin.y, mainTableView.frame.size.width, mainTableView.frame.size.height + self.tagPicker.frame.size.height)];
-        self.tagPicker.hidden = true;
+        self.tagPicker.hidden = YES;
         if (self.navigationItem.title != [dataSource objectAtIndex:[self.tagPicker selectedRowInComponent:0]])
         {
             self.navigationItem.title = [dataSource objectAtIndex:[self.tagPicker selectedRowInComponent:0]];
             [APIDownload downloadWithURL:[NSString stringWithFormat:@"http://api.stackexchange.com/2.1/questions?order=desc&page=1&pagesize=50&sort=creation&site=stackoverflow&filter=!-.mgWKou0vDR&tagged=%@&todate=%ld",[dataSource objectAtIndex:[self.tagPicker selectedRowInComponent:0]],(long)[[NSDate date] timeIntervalSince1970]] delegate:self];
-            self.activityIndicator.hidden = false;
-            self.errorLabel.hidden = true;
-            self.tryButton.hidden = true;
-            [self performSelector:@selector(tick) withObject:nil afterDelay:10.5f];
+            self.activityIndicator.hidden = NO;
+            self.errorLabel.hidden = YES;
+            self.tryButton.hidden = YES;
+            
         }
         else
         {
             if ([(NSDictionary*)[questDataArray objectForKey:@"items"] count]>0)
-                self.pickerBackView.hidden = true;
+                self.pickerBackView.hidden = YES;
         }
     }
-
+        
 }
+
 
 - (NSInteger)numberOfComponentsInPickerView:(UIPickerView *)pickerView
 {
@@ -212,15 +208,7 @@
     
 }
 
-- (void)tick
-{
-    if (!self.activityIndicator.hidden) {
-        self.activityIndicator.hidden = true;
-        self.errorLabel.hidden = false;
-        self.tryButton.hidden = false;
-    }
-    
-}
+
 
 
 
@@ -229,11 +217,26 @@
     [self setTryButton:nil];
     [super viewDidUnload];
 }
+
 - (IBAction)tryButtonTouch:(id)sender {
-    self.tryButton.hidden = true;
-    self.errorLabel.hidden = true;
+    self.tryButton.hidden = YES;
+    self.errorLabel.hidden = YES;
     [APIDownload downloadWithURL:[NSString stringWithFormat:@"http://api.stackexchange.com/2.1/questions?order=desc&page=1&pagesize=50&sort=creation&site=stackoverflow&filter=!-.mgWKou0vDR&tagged=%@&todate=%ld",self.navigationItem.title,(long)[[NSDate date] timeIntervalSince1970]] delegate:self];
-    self.activityIndicator.hidden = false;
-    [self performSelector:@selector(tick) withObject:nil afterDelay:10.5f];
+    self.activityIndicator.hidden = NO;
 }
+
+-(void)viewWillAppear:(BOOL)animated
+{
+    [mainTableView reloadData];
+}
+
+-(void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error
+{
+    self.activityIndicator.hidden = YES;
+    self.errorLabel.hidden = NO;
+    self.tryButton.hidden = NO;
+    
+}
+
+
 @end

@@ -8,11 +8,17 @@
 
 #import <Foundation/Foundation.h>
 
+@protocol APIDownloadDelegate <NSObject>
+@optional
+- (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error;
+@end
+
 @interface APIDownload : NSObject {    
     SEL successSelector;
+    id <APIDownloadDelegate> delegate;
 }
 
-@property (nonatomic, assign) id delegate;
+@property (nonatomic, assign) id <APIDownloadDelegate> delegate;
 @property (nonatomic, assign) NSInteger tag;
 @property (nonatomic, retain) NSMutableData *downloadData;
 @property (nonatomic, retain) NSURLResponse *response;

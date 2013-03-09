@@ -54,6 +54,7 @@
     return [request autorelease];
 }
 
+
 - (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)aResponse
 {
     if ([aResponse expectedContentLength]) {
@@ -101,8 +102,13 @@
 - (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error 
 {
     [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
-    NSLog(@"%@", error);
-    
+    if(delegate && [delegate respondsToSelector:@selector(connection:didFailWithError:)]){
+        [delegate connection:connection didFailWithError:error];
+    }
+    else
+    {
+        NSLog(@"%@", error);
+    }
 }
 
 - (void)setSuccessSelector:(SEL)selector {

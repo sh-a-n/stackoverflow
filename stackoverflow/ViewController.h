@@ -7,14 +7,15 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "APIDownload.h"
 
 
 @class DetailViewController;
 
-@interface ViewController : UIViewController
+@interface ViewController : UIViewController <UIPickerViewDataSource, UIPickerViewDelegate,UITableViewDataSource,UITableViewDelegate,UINavigationControllerDelegate,APIDownloadDelegate>
 //- (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error;
 
-@property (strong, nonatomic) DetailViewController * detailViewController;
+//@property (strong, nonatomic) DetailViewController * detailViewController;
 @property (nonatomic, retain) NSMutableData *questData;
 @property (nonatomic, strong) NSTimer * timer;
 @property (nonatomic,strong) UIBarButtonItem *tagButton;
@@ -29,5 +30,6 @@
 @property (nonatomic, strong) NSDictionary *questDataArray;
 @property (strong, nonatomic) IBOutlet UIView *pickerBackView;
 @property (strong, nonatomic) IBOutlet UIActivityIndicatorView * activityIndicator;
+
 
 @end
