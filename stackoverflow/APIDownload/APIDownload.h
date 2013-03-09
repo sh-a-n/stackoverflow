@@ -11,6 +11,7 @@
 @protocol APIDownloadDelegate <NSObject>
 @optional
 - (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error;
+- (void)setSuccessSelector:(SEL)selector;
 @end
 
 @interface APIDownload : NSObject {    
@@ -27,7 +28,7 @@
 + (id)downloadWithURL:(NSString*)url delegate:(id)delegate sel:(SEL)selector;
 + (id)downloadWithURL:(NSString*)url delegate:(id)delegate;
 
-- (void)setSuccessSelector:(SEL)selector;
+
 - (void)cancel;
 
 

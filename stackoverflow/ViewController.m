@@ -87,33 +87,7 @@
     }
     NSInteger seconds = [[NSDate date] timeIntervalSince1970] - lastmod_date;
     
-    if (seconds<60)
-    {
-        cell.modDate.text = [NSString stringWithFormat:@"Modified %ld sec. ago",(long)seconds];
-    }
-    else
-    {
-        if (seconds<3600)
-        {
-            cell.modDate.text = [NSString stringWithFormat:@"Modified %ld min. ago",(long)seconds/60];
-        }
-        else
-            if (seconds<3600*24) {
-                cell.modDate.text = [NSString stringWithFormat:@"Midified %ld hours ago",(long)seconds/3600];
-            }
-        else if (seconds<3600*24*30)
-        {
-            cell.modDate.text = [NSString stringWithFormat:@"Modified %ld days ago",(long)seconds/3600/24];
-        }
-        else if (seconds<3600*24*365)
-        {
-            cell.modDate.text = [NSString stringWithFormat:@"Modified %ld mes. ago",(long)seconds/3600/24/30];
-        }
-        else if (seconds>=3600*24*365)
-        {
-            cell.modDate.text = [NSString stringWithFormat:@"Modified %ld years ago",(long)seconds/3600/24/365];
-        }
-    }
+    [cell setTime:seconds];
     
     cell.labeltext.text = [(NSDictionary*)[questDataArray objectForKey:@"items"][indexPath.row] objectForKey:@"title"];
     UIFont *cellFont = [UIFont fontWithName:@"Helvetica" size:17.0f];
@@ -228,6 +202,7 @@
 -(void)viewWillAppear:(BOOL)animated
 {
     [mainTableView reloadData];
+    [super viewWillAppear:animated];
 }
 
 -(void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error

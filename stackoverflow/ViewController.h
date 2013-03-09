@@ -12,7 +12,7 @@
 
 @class DetailViewController;
 
-@interface ViewController : UIViewController <UIPickerViewDataSource, UIPickerViewDelegate,UITableViewDataSource,UITableViewDelegate,UINavigationControllerDelegate,APIDownloadDelegate>
+@interface ViewController : UIViewController <UIPickerViewDataSource, UIPickerViewDelegate,UITableViewDataSource,UITableViewDelegate,APIDownloadDelegate>
 //- (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error;
 
 //@property (strong, nonatomic) DetailViewController * detailViewController;

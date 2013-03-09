@@ -99,11 +99,11 @@
     }
 }
 
-- (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error 
+- (void)connection:(NSURLConnection *)aconnection didFailWithError:(NSError *)error
 {
     [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
     if(delegate && [delegate respondsToSelector:@selector(connection:didFailWithError:)]){
-        [delegate connection:connection didFailWithError:error];
+        [delegate connection:aconnection didFailWithError:error];
     }
     else
     {

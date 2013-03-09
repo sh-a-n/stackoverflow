@@ -15,5 +15,6 @@
 @property (nonatomic, retain) IBOutlet UILabel * modDate;
 @property (nonatomic, retain) IBOutlet UILabel * ansCount;
 
+- (void)setTime:(NSInteger)seconds;
 
 @end
